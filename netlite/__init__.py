@@ -7,16 +7,14 @@ class Base():
     
     children = {}
     
+    
     def __init__(self, **kwargs):
-        '''self._specify_fields({})'''
+        
         self.allowed_fields.update({'id':str})
         for name, value in kwargs.items():       
             print( ' - Init of %s:  %s = %s'%(self.get_type(),name, value))
             self.fields[name] = value
-    '''
-    def _specify_fields(self, fields):
-        print("Updating fields in %s with %s"%(self.get_type(),fields.keys()))
-        self.allowed_fields.update(fields)'''
+
             
     def get_id(self):
         return self.fields['id']
@@ -24,9 +22,14 @@ class Base():
     def get_type(self):
         return self.__class__.__name__
     
-    def to_json(self):
+    def to_json(self, indent='    '):
     
-        s = "{ '%s': \n"%self.get_name()
+        s = "{ '%s':'%s' "%(self.get_type(),self.get_id())
+        if len(self.fields)>0:
+            for a in self.allowed_fields:
+                if a != 'id':
+                    if a in self.fields:
+                        s+='\n'+indent +"'%s' = '%s'"%(a,self.fields[a])
         
         for c in self.children:
             s += c.to_json()
@@ -50,10 +53,10 @@ class Network(Base):
   
     
 class Population(Base):
-    
-        allowed_fields ={'size':int,
-                           'component':str,
-                           'color':str}
+
+    allowed_fields = {'size':int,
+                      'component':str,
+                      'color':str}
         
 '''       
     def __init__(self, **kwargs):

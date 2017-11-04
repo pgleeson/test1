@@ -12,7 +12,9 @@ print n
 p = Population(id='pop0', size=5, component='cell0')
 
 print p
+print p.to_json()
+
 '''
 
-#print p.to_json()
+#
 '''
