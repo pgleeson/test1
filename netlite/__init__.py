@@ -31,7 +31,7 @@ class Base(object):
         return 'cc'  '''
     
     def __getattr__(self, name):
-        print("   Getting attr %s..."%(name))
+        #print("   Getting attr %s..."%(name))
         '''
         print("Checking %s for attr %s..."%(self.get_id(),name))'''
         
@@ -46,7 +46,7 @@ class Base(object):
             self.__dict__['allowed_children'] = collections.OrderedDict()
             return self.__dict__['allowed_children']
         
-        print self.allowed_fields
+        #print self.allowed_fields
         if name in self.allowed_fields:
             return self.fields[name]
         
@@ -59,7 +59,7 @@ class Base(object):
     
     def __setattr__(self, name, value):
         
-        print("   Setting attr %s=%s..."%(name, value))
+        #print("   Setting attr %s=%s..."%(name, value))
         
         if name=='allowed_fields' and 'allowed_fields' not in self.__dict__:
             self.__dict__['allowed_fields'] = collections.OrderedDict()

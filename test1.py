@@ -1,18 +1,15 @@
 from netlite import *
 '''
-'''
+
 b = Base(id='base0')
 
 print b
+'''
 
+net = Network(id='net0')
 
-n = Network(id='net0')
-
-print n
+print net
 p = Population(id='pop0', size=5, component='cell0')
-print p
-print p.to_json()
-
 p2 = Population(id='pop2', size=10, component='cell1')
 
 print p
@@ -20,17 +17,14 @@ print p2
 
 print p2.to_json()
 
-print p.size
 
-print n.populations
-n.populations.append(p)
-n.populations.append(p2)
+net.populations.append(p)
+net.populations.append(p2)
 
-print n
-print n.id
-n.id = 'rr4'
+print net
+net.id = 'TestNetwork'
 
-print n.to_json()
+print net.to_json()
 
 '''
 #
