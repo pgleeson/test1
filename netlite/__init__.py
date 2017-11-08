@@ -10,8 +10,8 @@ class Base(object):
         self.__dict__['children'] = collections.OrderedDict()
 
         for name, value in kwargs.items():       
-            print( ' - Init of %s:  %s = %s'%(self.get_type(),name, value))
-            self.fields[name] = value
+            #print( ' - Init of %s:  %s = %s'%(self.get_type(),name, value))
+            self.fields[name] = (self.allowed_fields[name])(value)
             
             
     def get_id(self):
@@ -25,7 +25,6 @@ class Base(object):
     
     
     def __getattr__(self, name):
-        #print("   Getting attr %s..."%(name))
         '''
         print("Checking %s for attr %s..."%(self.get_id(),name))'''
         
@@ -67,8 +66,8 @@ class Base(object):
             return
         
         if name in self.allowed_fields:
-            self.fields[name] = value
-            return
+            self.fields[name] = (self.allowed_fields[name])(value)
+            return 
         
     
     def to_json(self, pre_indent='', indent='    ', wrap=True):
@@ -79,7 +78,11 @@ class Base(object):
             for a in self.allowed_fields:
                 if a != 'id':
                     if a in self.fields:
-                        s+='\n'+pre_indent+indent +'"%s": "%s",'%(a,self.fields[a])
+                        formatted = '%s'
+                        if isinstance(self.fields[a],str):
+                            formatted = '"%s"'
+                            
+                        s+='\n'+pre_indent+indent +'"%s": '%a+formatted%(self.fields[a])+','
             
         for c in self.children:
             s+='\n'+pre_indent+indent +'"%s": [\n'%(c)
@@ -94,7 +97,9 @@ class Base(object):
         
         return s
     
-    def to_json_file(self, file_name):
+    def to_json_file(self, file_name=None):
+        if not file_name:
+            file_name='%s.json'%self.id
         f = open(file_name,'w')
         f.write(self.to_json())
         f.close()
@@ -113,8 +118,6 @@ class Base(object):
                     
         for c in self.allowed_children:
             if c in self.children:
-                print c
-                print self.children
                 s += '\n  %s:'%(c,)
                 for cc in self.children[c]:
                     s += '\n    %s'%(cc)
@@ -166,5 +169,22 @@ class Projection(Base):
 
 
     
+class Simulation(Base):
+
+    def __init__(self, **kwargs):
+        
+        self.allowed_fields = {'duration':float,
+                               'dt':float,
+                               'target':str}
+                        
+        super(Simulation, self).__init__(**kwargs)
     
       
+    def run(self,simulator):
+        
+        if simulator=='jNeuroML':
+            
+            from pyneuroml.lems.LEMSSimulation import LEMSSimulation
+            ls = LEMSSimulation(self.id, self.duration, self.dt, self.target)
+            ls.save_to_file(file_name='LEMS_%s.xml'%self.id)
+        
