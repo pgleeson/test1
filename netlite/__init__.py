@@ -2,33 +2,27 @@ import collections
 
 class Base(object):
     
-    
     def __init__(self, **kwargs):
         
-        self.allowed_fields.update({'id':str})
+        self.allowed_fields.update({'id':str, 'notes':str})
         
         self.__dict__['fields'] = collections.OrderedDict()
-
         self.__dict__['children'] = collections.OrderedDict()
 
         for name, value in kwargs.items():       
             print( ' - Init of %s:  %s = %s'%(self.get_type(),name, value))
             self.fields[name] = value
             
-
             
     def get_id(self):
         if len(self.fields)==0:
             return '???'
         return self.fields['id']
             
+            
     def get_type(self):
         return self.__class__.__name__
     
-    '''
-    def __getitem__(self, name):
-        print("Checking for item %s..."%(name))
-        return 'cc'  '''
     
     def __getattr__(self, name):
         #print("   Getting attr %s..."%(name))
@@ -48,6 +42,8 @@ class Base(object):
         
         #print self.allowed_fields
         if name in self.allowed_fields:
+            if not name in self.fields:
+                return None
             return self.fields[name]
         
         if name in self.allowed_children:
@@ -55,7 +51,6 @@ class Base(object):
                 self.children[name] = []
             return self.children[name]
         
-    
     
     def __setattr__(self, name, value):
         
@@ -75,34 +70,39 @@ class Base(object):
             self.fields[name] = value
             return
         
-            
-            
-        
     
-    def to_json(self, indent='    ', wrap=True):
+    def to_json(self, pre_indent='', indent='    ', wrap=True):
         
-        s = '{' if wrap else ''
-        s += "'%s': "%(self.get_id())
+        s = pre_indent+('{ ' if wrap else '')
+        s += '"%s": {'%(self.get_id())
         if len(self.fields)>0:
             for a in self.allowed_fields:
                 if a != 'id':
                     if a in self.fields:
-                        s+='\n'+indent +"'%s' = '%s'"%(a,self.fields[a])
-        
-        for c in self.children:
-            s+='\n'+indent +"'%s' = ["%(c)
-            for cc in self.children[c]:
-                s += cc.to_json(indent+indent, wrap=True)
-            s+='\n'+indent +"]"
+                        s+='\n'+pre_indent+indent +'"%s": "%s",'%(a,self.fields[a])
             
+        for c in self.children:
+            s+='\n'+pre_indent+indent +'"%s": [\n'%(c)
+            for cc in self.children[c]:
+                s += cc.to_json(pre_indent+indent+indent,indent, wrap=True)+',\n'
+            s=s[:-2]
+            s+='\n'+pre_indent+indent +"],"
+        s=s[:-1]    
+        s+=' }'
         if wrap:
-            s += "\n}\n" 
+            s += "\n"+pre_indent+"}" 
         
         return s
     
+    def to_json_file(self, file_name):
+        f = open(file_name,'w')
+        f.write(self.to_json())
+        f.close()
+        print("Written to: %s"%file_name)
     
     def __repr__(self):
         return str(self)
+    
     
     def __str__(self):
         s = '%s (%s)'%(self.get_type(),self.get_id())
@@ -139,15 +139,30 @@ class Population(Base):
         self.allowed_fields = {'size':int,
                                'component':str,
                                'color':str}
+                               
+        self.allowed_children = {'random_layout':'Rnd'}
                       
         super(Population, self).__init__(**kwargs)
  
-'''
+class RandomLayout(Base):
+
+    def __init__(self, **kwargs):
+        
+        self.allowed_fields = {'x':float,
+                               'y':float,
+                               'z':float}
+                               
+        super(RandomLayout, self).__init__(**kwargs)
+
         
 class Projection(Base):
 
-    allowed_fields = ['presynaptic','postsynaptic']
-'''
+    def __init__(self, **kwargs):
+        self.allowed_fields = {'presynaptic':str,
+                               'postsynaptic':str,
+                               'synapse':str}
+
+        super(Projection, self).__init__(**kwargs)
 
 
     

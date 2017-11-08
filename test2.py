@@ -4,6 +4,10 @@ from netlite.DefaultNetworkHandler import DefaultNetworkHandler
 
 from test1 import net
 
+net.populations[0].random_layout.append(RandomLayout(id='test1',x=1000,y=100,z=1000))
+net.populations[1].random_layout.append(RandomLayout(id='test2',x=1000,y=1000,z=1000))
+
+print net.to_json()
 import logging
 logging.basicConfig(level=logging.DEBUG, format="%(name)-19s %(levelname)-5s - %(message)s")
 
